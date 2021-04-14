@@ -22,10 +22,11 @@ export default {
   emits: ['scroll'],
   setup(props, { emit }) {
     const rootRef = ref(null)
-    useSlider(rootRef, props, emit)
+    const scroll = useSlider(rootRef, props, emit)
 
     return {
-      rootRef
+      rootRef,
+      scroll
     }
   }
 }

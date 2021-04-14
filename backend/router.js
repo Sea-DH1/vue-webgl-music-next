@@ -34,8 +34,8 @@ function getRandomVal(prefix = '') {
 
 // 获取一个随机 uid
 function getUid() {
-  const t = (new Date()).getUTCMilliseconds()
-  return '' + Math.round(2147483647 * Math.random()) * t % 1e10
+  const t = new Date().getUTCMilliseconds()
+  return '' + ((Math.round(2147483647 * Math.random()) * t) % 1e10)
 }
 
 // 对 axios get 请求的封装
@@ -66,7 +66,7 @@ function post(url, params) {
 function handleSongList(list) {
   const songList = []
 
-  list.forEach((item) => {
+  list.forEach(item => {
     const info = item.songInfo || item
     if (info.pay.pay_play !== 0 || !info.interval) {
       // 过滤付费歌曲和获取不到时长的歌曲
@@ -97,7 +97,7 @@ function mergeSinger(singer) {
   if (!singer) {
     return ''
   }
-  singer.forEach((s) => {
+  singer.forEach(s => {
     ret.push(s.name)
   })
   return ret.join('/')
@@ -153,7 +153,7 @@ function registerRecommend(app) {
       sign,
       '-': randomVal,
       data
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         // 处理轮播图数据
@@ -233,7 +233,7 @@ function registerSingerList(app) {
       sign,
       '-': randomKey,
       data
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         // 处理歌手列表数据
@@ -247,7 +247,7 @@ function registerSingerList(app) {
           }
         }
 
-        singerList.forEach((item) => {
+        singerList.forEach(item => {
           // 把歌手名转成拼音
           const p = pinyin(item.singer_name)
           if (!p || !p.length) {
@@ -300,7 +300,7 @@ function registerSingerList(app) {
 
   // 做一层数据映射，构造单个 singer 数据结构
   function map(singerList) {
-    return singerList.map((item) => {
+    return singerList.map(item => {
       return {
         id: item.singer_id,
         mid: item.singer_mid,
@@ -332,7 +332,7 @@ function registerSingerDetail(app) {
       sign,
       '-': randomKey,
       data
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         const list = data.singerSongList.data.songList
@@ -363,7 +363,7 @@ function registerSongsUrl(app) {
     if (mid.length > 100) {
       const groupLen = Math.ceil(mid.length / 100)
       for (let i = 0; i < groupLen; i++) {
-        midGroup.push(mid.slice(i * 100, (100 * (i + 1))))
+        midGroup.push(mid.slice(i * 100, 100 * (i + 1)))
       }
     } else {
       midGroup = [mid]
@@ -400,13 +400,13 @@ function registerSongsUrl(app) {
       const url = `https://u.y.qq.com/cgi-bin/musics.fcg?_=${getRandomVal()}&sign=${sign}`
 
       // 发送 post 请求
-      return post(url, data).then((response) => {
+      return post(url, data).then(response => {
         const data = response.data
         if (data.code === ERR_OK) {
           const midInfo = data.req_0.data.midurlinfo
           const sip = data.req_0.data.sip
           const domain = sip[sip.length - 1]
-          midInfo.forEach((info) => {
+          midInfo.forEach(info => {
             // 获取歌曲的真实播放 URL
             urlMap[info.songmid] = domain + info.purl
           })
@@ -415,7 +415,7 @@ function registerSongsUrl(app) {
     }
 
     // 构造多个 Promise 请求
-    const requests = midGroup.map((mid) => {
+    const requests = midGroup.map(mid => {
       return process(mid)
     })
 
@@ -442,7 +442,7 @@ function registerLyric(app) {
       pcachetime: +new Date(),
       songmid: req.query.mid,
       g_tk_new_20200303: token
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         res.json({
@@ -484,7 +484,7 @@ function registerAlbum(app) {
 
     const url = `https://u.y.qq.com/cgi-bin/musics.fcg?_=${getRandomVal()}&sign=${sign}`
 
-    post(url, data).then((response) => {
+    post(url, data).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         const list = data.req_0.data.songlist
@@ -520,20 +520,20 @@ function registerTopList(app) {
       sign,
       '-': randomKey,
       data
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         const topList = []
         const group = data.toplist.data.group
 
-        group.forEach((item) => {
-          item.toplist.forEach((listItem) => {
+        group.forEach(item => {
+          item.toplist.forEach(listItem => {
             topList.push({
               id: listItem.topId,
               pic: listItem.frontPicUrl,
               name: listItem.title,
               period: listItem.period,
-              songList: listItem.song.map((songItem) => {
+              songList: listItem.song.map(songItem => {
                 return {
                   id: songItem.songId,
                   singerName: songItem.singerName,
@@ -587,7 +587,7 @@ function registerTopDetail(app) {
       sign,
       '-': randomKey,
       data
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         const list = data.detail.data.songInfoList
@@ -613,18 +613,20 @@ function registerHotKeys(app) {
 
     get(url, {
       g_tk_new_20200303: token
-    }).then((response) => {
+    }).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         res.json({
           code: ERR_OK,
           result: {
-            hotKeys: data.data.hotkey.map((key) => {
-              return {
-                key: key.k,
-                id: key.n
-              }
-            }).slice(0, 10)
+            hotKeys: data.data.hotkey
+              .map(key => {
+                return {
+                  key: key.k,
+                  id: key.n
+                }
+              })
+              .slice(0, 10)
           }
         })
       } else {
@@ -662,14 +664,14 @@ function registerSearch(app) {
       format: 'json'
     }
 
-    get(url, data).then((response) => {
+    get(url, data).then(response => {
       const data = response.data
       if (data.code === ERR_OK) {
         const songList = []
         const songData = data.data.song
         const list = songData.list
 
-        list.forEach((item) => {
+        list.forEach(item => {
           const info = item
           if (info.pay.payplay !== 0 || !info.interval) {
             // 过滤付费歌曲
