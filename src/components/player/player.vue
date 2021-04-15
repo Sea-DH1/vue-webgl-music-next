@@ -11,6 +11,22 @@
         <h1 class="title">{{ currentSong.name }}</h1>
         <h2 class="subtitle">{{ currentSong.singer }}</h2>
       </div>
+      <div class="middle">
+        <div class="middle-l">
+          <div class="cd-wrapper">
+            <div ref="cdRef" class="cd">
+              <img ref="cdImageRef" class="image" :class="cdCls" :src="currentSong.pic" alt="" />
+            </div>
+          </div>
+        </div>
+        <scroll class="middle-r" ref="lyricScrollRef">
+          <div class="lyric-wrapper">
+            <div v-if="currentLyric" ref="lyricListRef">
+              <p class="text" :class="{ current: currentLineNum === index }" v-for="(line, index) in currentLyric.lines" :key="line.num">{{ line.txt }}</p>
+            </div>
+          </div>
+        </scroll>
+      </div>
       <div class="bottom">
         <div class="progress-wrapper">
           <span class="time time-l">{{ formatTime(currentTime) }}</span>
@@ -38,7 +54,7 @@
         </div>
       </div>
     </div>
-    <audio ref="audioRef" @pause="pause" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio ref="audioRef" @pause="pause" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
 
@@ -47,13 +63,18 @@ import { useStore } from 'vuex'
 import { computed, watch, ref } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
+import useCd from './use-cd'
+import useLyric from './use-lyric'
 import ProgressBar from './progress-bar'
+import Scroll from '@/components/base/scroll/scroll'
 import { formatTime } from '@/assets/js/util'
+import { PLAY_MODE } from '@/assets/js/constant'
 
 export default {
   name: 'player',
   components: {
-    ProgressBar
+    ProgressBar,
+    Scroll
   },
   setup() {
     // data
@@ -69,10 +90,13 @@ export default {
 
     const playing = computed(() => store.state.playing)
     const currentIndex = computed(() => store.state.currentIndex)
+    const playMode = computed(() => store.state.playMode)
 
     // hooks
     const { modeIcon, changeMode } = useMode()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
+    const { cdCls, cdRef, cdImageRef } = useCd()
+    const { currentLyric, currentLineNum, lyricScrollRef, lyricListRef, playLyric, stopLyric } = useLyric({ songReady, currentTime })
 
     // computed
     const playlist = computed(() => store.state.playlist)
@@ -106,6 +130,13 @@ export default {
         return
       }
       const audioEl = audioRef.value
+      if (newPlaying) {
+        audioEl.play()
+        playLyric()
+      } else {
+        audioEl.pause()
+        stopLyric()
+      }
       newPlaying ? audioEl.play() : audioEl.pause()
     })
 
@@ -172,6 +203,7 @@ export default {
       const audioEl = audioRef.value
       audioEl.currentTime = 0
       audioEl.play()
+      store.commit('setPlayingState', true)
     }
 
     function ready() {
@@ -179,6 +211,7 @@ export default {
         return
       }
       songReady.value = true
+      playLyric()
     }
 
     function error() {
@@ -194,6 +227,8 @@ export default {
     function onProgressChanging(progress) {
       progressChanging = true
       currentTime.value = currentSong.value.duration * progress
+      playLyric()
+      stopLyric()
     }
 
     function onProgressChanged(progress) {
@@ -201,6 +236,16 @@ export default {
       audioRef.value.currentTime = currentTime.value = currentSong.value.duration * progress
       if (!playing.value) {
         store.commit('setPlayingState', true)
+      }
+      playLyric()
+    }
+
+    function end() {
+      currentTime.value = 0
+      if (playMode.value === PLAY_MODE.loop) {
+        loop()
+      } else {
+        next()
       }
     }
 
@@ -223,12 +268,22 @@ export default {
       formatTime,
       onProgressChanging,
       onProgressChanged,
+      end,
       // mode
       modeIcon,
       changeMode,
       // favorite
       getFavoriteIcon,
-      toggleFavorite
+      toggleFavorite,
+      // cd
+      cdCls,
+      cdRef,
+      cdImageRef,
+      // lyric
+      currentLyric,
+      currentLineNum,
+      lyricScrollRef,
+      lyricListRef
     }
   }
 }
@@ -299,7 +354,8 @@ export default {
       white-space: nowrap;
       font-size: 0;
       .middle-l {
-        display: inline-block;
+        // display: inline-block;
+        display: none;
         vertical-align: top;
         position: relative;
         width: 100%;
