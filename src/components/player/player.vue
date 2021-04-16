@@ -11,23 +11,33 @@
         <h1 class="title">{{ currentSong.name }}</h1>
         <h2 class="subtitle">{{ currentSong.singer }}</h2>
       </div>
-      <div class="middle">
-        <div class="middle-l">
+      <div class="middle" @touchstart.prevent="onMiddleTouchStart" @touchmove.prevent="onMiddleTouchMove" @touchend.prevent="onMiddleTouchEnd">
+        <div class="middle-l" :style="middleLStyle">
           <div class="cd-wrapper">
             <div ref="cdRef" class="cd">
               <img ref="cdImageRef" class="image" :class="cdCls" :src="currentSong.pic" alt="" />
             </div>
           </div>
+          <div class="playing-lyric-wrapper">
+            <div class="playing-lyric">{{ playingLyric }}</div>
+          </div>
         </div>
-        <scroll class="middle-r" ref="lyricScrollRef">
+        <scroll class="middle-r" ref="lyricScrollRef" :style="middleRStyle">
           <div class="lyric-wrapper">
             <div v-if="currentLyric" ref="lyricListRef">
               <p class="text" :class="{ current: currentLineNum === index }" v-for="(line, index) in currentLyric.lines" :key="line.num">{{ line.txt }}</p>
+            </div>
+            <div class="pure-music" v-show="pureMusicLyric">
+              <p>{{ pureMusicLyric }}</p>
             </div>
           </div>
         </scroll>
       </div>
       <div class="bottom">
+        <div class="dot-wrapper">
+          <span class="dot" :class="{ active: currentShow === 'cd' }"></span>
+          <span class="dot" :class="{ active: currentShow === 'lyric' }"></span>
+        </div>
         <div class="progress-wrapper">
           <span class="time time-l">{{ formatTime(currentTime) }}</span>
           <div class="progress-bar-wrapper">
@@ -65,6 +75,7 @@ import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import useCd from './use-cd'
 import useLyric from './use-lyric'
+import useMiddleInteractive from './use-middle-interactive'
 import ProgressBar from './progress-bar'
 import Scroll from '@/components/base/scroll/scroll'
 import { formatTime } from '@/assets/js/util'
@@ -96,7 +107,8 @@ export default {
     const { modeIcon, changeMode } = useMode()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
     const { cdCls, cdRef, cdImageRef } = useCd()
-    const { currentLyric, currentLineNum, lyricScrollRef, lyricListRef, playLyric, stopLyric } = useLyric({ songReady, currentTime })
+    const { currentLyric, currentLineNum, pureMusicLyric, playingLyric, lyricScrollRef, lyricListRef, playLyric, stopLyric } = useLyric({ songReady, currentTime })
+    const { currentShow, middleLStyle, middleRStyle, onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd } = useMiddleInteractive()
 
     // computed
     const playlist = computed(() => store.state.playlist)
@@ -282,8 +294,17 @@ export default {
       // lyric
       currentLyric,
       currentLineNum,
+      pureMusicLyric,
+      playingLyric,
       lyricScrollRef,
-      lyricListRef
+      lyricListRef,
+      // middle-interactive
+      currentShow,
+      middleLStyle,
+      middleRStyle,
+      onMiddleTouchStart,
+      onMiddleTouchMove,
+      onMiddleTouchEnd
     }
   }
 }
@@ -354,8 +375,7 @@ export default {
       white-space: nowrap;
       font-size: 0;
       .middle-l {
-        // display: inline-block;
-        display: none;
+        display: inline-block;
         vertical-align: top;
         position: relative;
         width: 100%;
