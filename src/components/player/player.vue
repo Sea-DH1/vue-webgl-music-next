@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" v-show="playlist.length">
     <div class="normal-player" v-show="fullScreen">
       <div class="background">
         <img :src="currentSong.pic" alt="" />
@@ -64,6 +64,7 @@
         </div>
       </div>
     </div>
+    <mini-player :progress="progress" :toggle-play="togglePlay"></mini-player>
     <audio ref="audioRef" @pause="pause" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
@@ -78,6 +79,7 @@ import useLyric from './use-lyric'
 import useMiddleInteractive from './use-middle-interactive'
 import ProgressBar from './progress-bar'
 import Scroll from '@/components/base/scroll/scroll'
+import MiniPlayer from './mini-player'
 import { formatTime } from '@/assets/js/util'
 import { PLAY_MODE } from '@/assets/js/constant'
 
@@ -85,7 +87,8 @@ export default {
   name: 'player',
   components: {
     ProgressBar,
-    Scroll
+    Scroll,
+    MiniPlayer
   },
   setup() {
     // data
@@ -266,6 +269,7 @@ export default {
       fullScreen,
       currentTime,
       currentSong,
+      playlist,
       playIcon,
       disableCls,
       progress,
