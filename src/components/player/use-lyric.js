@@ -65,6 +65,7 @@ export default function useLyric({ songReady, currentTime }) {
     playingLyric.value = txt
     const scrollComp = lyricScrollRef.value
     const listEl = lyricListRef.value
+
     if (!listEl) {
       return
     }
