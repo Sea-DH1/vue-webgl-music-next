@@ -38,7 +38,7 @@
 
 <script>
 import Scroll from '@/components/base/scroll/scroll'
-import Confirm from '@/components/base/comfirm/comfirm'
+import Confirm from '@/components/base/confirm/confirm'
 import { computed, ref, nextTick, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode'
