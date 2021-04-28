@@ -1,12 +1,12 @@
 {
   "tabWidth": 2,
-	"useTabs": false,
-	"bracketSpacing": true,
-	"singleQuote": true,
-	"trailingComma": "none",
-	"jsxBracketSameLine": true,
-	"semi": false,
-	"printWidth": 200,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "jsxBracketSameLine": true,
+  "semi": false,
+  "printWidth": 100,
   "overrides": [
     {
       "files": ".prettierrc",
