@@ -1,4 +1,12 @@
-# vue-webgl-music-next
+# Vue-webgl-music-next
+
+Vue音乐课学习项目
+
+Vue3 + Vue Router + Vuex
+
+[Demo](https://music.nsearh.com/).
+
+[课程地址](https://coding.imooc.com/class/503.html)
 
 ## Project setup
 ```
@@ -19,6 +27,3 @@ yarn build
 ```
 yarn lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
